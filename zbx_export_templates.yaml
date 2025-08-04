@@ -1,0 +1,114 @@
+zabbix_export:
+  version: '7.4'
+  template_groups:
+    - uuid: 7df96b18c230490a9a0a9e2307226338
+      name: Templates
+  templates:
+    - uuid: fbcc2015e7b146d5bcfc7114dd0d118f
+      template: 'Support Contract monitor'
+      name: 'Support Contract monitor'
+      description: |
+        Examining support/support for systems.
+        
+        Macro {$SUPPORT_END_UNIX} in UNIX format is obtained with the command
+        date -d "2025-12-31" +%s
+      groups:
+        - name: Templates
+      items:
+        - uuid: afef73c046a74694a6a980ed6b71874b
+          name: 'Support days remaining'
+          type: CALCULATED
+          key: support.days.remaining
+          delay: 1d
+          status: DISABLED
+          units: days
+          params: '({$SUPPORT_END_UNIX} - now()) / 86400'
+          description: |
+            Dni pozostałe do zakończenia supportu. 
+            Druga metoda z formatu UNIX
+          tags:
+            - tag: contract
+              value: support
+          triggers:
+            - uuid: db5f0d7344ef445faa0529597af1cda1
+              expression: 'last(/Support Contract monitor/support.days.remaining)<30'
+              name: 'Support days remaining - {ITEM.LASTVALUE}'
+              priority: HIGH
+              manual_close: 'YES'
+              tags:
+                - tag: contract
+                  value: support
+            - uuid: 361f75890fce4b24af968b1f61e4dcdb
+              expression: 'last(/Support Contract monitor/support.days.remaining)<60'
+              name: 'Support days remaining - {ITEM.LASTVALUE}'
+              priority: AVERAGE
+              manual_close: 'YES'
+              tags:
+                - tag: contract
+                  value: support
+        - uuid: d0fecdf9ccf14d938db600d5c3931224
+          name: 'Support Days Remaining'
+          type: CALCULATED
+          key: support.end.date.human
+          delay: 1d
+          units: days
+          params: '(last(//support.end.date.unix) - now()) / 86400'
+          tags:
+            - tag: contract
+              value: support
+          triggers:
+            - uuid: 1fbf7ce82036456b9bbcf22dd2eab8ff
+              expression: 'last(/Support Contract monitor/support.end.date.human)<30'
+              name: 'Support days remaining - {ITEM.LASTVALUE}'
+              priority: HIGH
+              manual_close: 'YES'
+              tags:
+                - tag: contract
+                  value: support
+            - uuid: e1046de58620487ba9c9a66afeaac346
+              expression: 'last(/Support Contract monitor/support.end.date.human)<60'
+              name: 'Support days remaining - {ITEM.LASTVALUE}'
+              priority: WARNING
+              manual_close: 'YES'
+              tags:
+                - tag: contract
+                  value: support
+        - uuid: 831afdaa222d4b939f97a97edb440468
+          name: 'Support End Date (Raw)'
+          type: CALCULATED
+          key: support.end.date.raw
+          delay: 1d
+          trends: '0'
+          params: '{$SUPPORT_END}'
+          description: 'Get value from macro'
+          tags:
+            - tag: internal_calculation
+              value: 'not important'
+        - uuid: 426cd19e52a14024bac482abb20941a5
+          name: 'Support days remaining unix'
+          type: DEPENDENT
+          key: support.end.date.unix
+          description: 'To unix timestamp'
+          preprocessing:
+            - type: JAVASCRIPT
+              parameters:
+                - |
+                  var dateStr = value;
+                  var year = parseInt(dateStr.substring(0,4),10);
+                  var month = parseInt(dateStr.substring(4,6),10)-1;
+                  var day = parseInt(dateStr.substring(6,8),10);
+                  return Math.floor(new Date(year, month, day).getTime()/1000);
+                  
+          master_item:
+            key: support.end.date.raw
+          tags:
+            - tag: internal_calculation
+              value: 'not important'
+      tags:
+        - tag: contract
+          value: support
+      macros:
+        - macro: '{$SUPPORT_END}'
+          description: 'YYYYMMDD / Support Contract monitor'
+        - macro: '{$SUPPORT_END_UNIX}'
+          description: 'unix timestamp / Support Contract monitor - 2 method'
