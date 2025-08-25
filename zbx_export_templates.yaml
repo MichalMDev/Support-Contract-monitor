@@ -32,7 +32,7 @@ zabbix_export:
           triggers:
             - uuid: db5f0d7344ef445faa0529597af1cda1
               expression: 'last(/Support Contract monitor/support.days.remaining)<30'
-              name: 'Support days remaining - {ITEM.LASTVALUE}'
+              name: 'Support days remaining < 30 days'
               priority: HIGH
               manual_close: 'YES'
               tags:
@@ -40,7 +40,7 @@ zabbix_export:
                   value: support
             - uuid: 361f75890fce4b24af968b1f61e4dcdb
               expression: 'last(/Support Contract monitor/support.days.remaining)<60'
-              name: 'Support days remaining - {ITEM.LASTVALUE}'
+              name: 'Support days remaining < 60 days'
               priority: AVERAGE
               manual_close: 'YES'
               tags:
@@ -57,18 +57,18 @@ zabbix_export:
             - tag: contract
               value: support
           triggers:
-            - uuid: 1fbf7ce82036456b9bbcf22dd2eab8ff
-              expression: 'last(/Support Contract monitor/support.end.date.human)<30'
-              name: 'Support days remaining - {ITEM.LASTVALUE}'
-              priority: HIGH
+            - uuid: e1046de58620487ba9c9a66afeaac346
+              expression: 'last(/Support Contract monitor/support.end.date.human)<60'
+              name: 'Support days remaining 60 days'
+              priority: WARNING
               manual_close: 'YES'
               tags:
                 - tag: contract
                   value: support
-            - uuid: e1046de58620487ba9c9a66afeaac346
-              expression: 'last(/Support Contract monitor/support.end.date.human)<60'
-              name: 'Support days remaining - {ITEM.LASTVALUE}'
-              priority: WARNING
+            - uuid: 1fbf7ce82036456b9bbcf22dd2eab8ff
+              expression: 'last(/Support Contract monitor/support.end.date.human)<30'
+              name: 'Support days remaining < 30 days'
+              priority: HIGH
               manual_close: 'YES'
               tags:
                 - tag: contract
