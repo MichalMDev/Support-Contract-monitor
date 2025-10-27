@@ -9,67 +9,61 @@ zabbix_export:
       name: 'Support Contract monitor'
       description: |
         Examining support/support for systems.
-        
-        Macro {$SUPPORT_END_UNIX} in UNIX format is obtained with the command
-        date -d "2025-12-31" +%s
+        See macros
       groups:
         - name: Templates
       items:
-        - uuid: afef73c046a74694a6a980ed6b71874b
-          name: 'Support days remaining'
-          type: CALCULATED
-          key: support.days.remaining
-          delay: 1d
-          status: DISABLED
-          units: days
-          params: '({$SUPPORT_END_UNIX} - now()) / 86400'
-          description: |
-            Dni pozostałe do zakończenia supportu. 
-            Druga metoda z formatu UNIX
-          tags:
-            - tag: contract
-              value: support
-          triggers:
-            - uuid: db5f0d7344ef445faa0529597af1cda1
-              expression: 'last(/Support Contract monitor/support.days.remaining)<30'
-              name: 'Support days remaining < 30 days'
-              priority: HIGH
-              manual_close: 'YES'
-              tags:
-                - tag: contract
-                  value: support
-            - uuid: 361f75890fce4b24af968b1f61e4dcdb
-              expression: 'last(/Support Contract monitor/support.days.remaining)<60'
-              name: 'Support days remaining < 60 days'
-              priority: AVERAGE
-              manual_close: 'YES'
-              tags:
-                - tag: contract
-                  value: support
         - uuid: d0fecdf9ccf14d938db600d5c3931224
           name: 'Support Days Remaining'
           type: CALCULATED
           key: support.end.date.human
           delay: 1d
-          units: days
+          value_type: FLOAT
+          trends: '0'
           params: '(last(//support.end.date.unix) - now()) / 86400'
+          preprocessing:
+            - type: REGEX
+              parameters:
+                - '^(-?\d+)'
+                - \1
+            - type: IN_RANGE
+              parameters:
+                - '-10'
+                - ''
           tags:
             - tag: contract
               value: support
           triggers:
-            - uuid: e1046de58620487ba9c9a66afeaac346
-              expression: 'last(/Support Contract monitor/support.end.date.human)<60'
-              name: 'Support days remaining 60 days'
-              priority: WARNING
+            - uuid: 1fbf7ce82036456b9bbcf22dd2eab8ff
+              expression: 'last(/Support Contract monitor/support.end.date.human)<30'
+              name: 'Support days remaining < 30 days'
+              opdata: 'Now: {ITEM.LASTVALUE}'
+              priority: HIGH
               manual_close: 'YES'
               tags:
                 - tag: contract
                   value: support
-            - uuid: 1fbf7ce82036456b9bbcf22dd2eab8ff
-              expression: 'last(/Support Contract monitor/support.end.date.human)<30'
-              name: 'Support days remaining < 30 days'
-              priority: HIGH
+            - uuid: e1046de58620487ba9c9a66afeaac346
+              expression: 'last(/Support Contract monitor/support.end.date.human)<60'
+              name: 'Support days remaining < 60 days'
+              opdata: 'Now: {ITEM.LASTVALUE}'
+              priority: WARNING
               manual_close: 'YES'
+              dependencies:
+                - name: 'Support days remaining < 30 days'
+                  expression: 'last(/Support Contract monitor/support.end.date.human)<30'
+              tags:
+                - tag: contract
+                  value: support
+            - uuid: 028c11fbf4ed4e7ebbaebb8a12c64344
+              expression: 'last(/Support Contract monitor/support.end.date.human)<0'
+              name: 'Support expired'
+              opdata: 'Now: {ITEM.LASTVALUE}'
+              priority: INFO
+              manual_close: 'YES'
+              dependencies:
+                - name: 'Support days remaining < 30 days'
+                  expression: 'last(/Support Contract monitor/support.end.date.human)<30'
               tags:
                 - tag: contract
                   value: support
@@ -110,5 +104,3 @@ zabbix_export:
       macros:
         - macro: '{$SUPPORT_END}'
           description: 'YYYYMMDD / Support Contract monitor'
-        - macro: '{$SUPPORT_END_UNIX}'
-          description: 'unix timestamp / Support Contract monitor - 2 method'
