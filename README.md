@@ -1,8 +1,5 @@
-# Examining support for systems.
-
-The macro {$SUPPORT_END_UNIX} is obtained in UNIX format with the command
-date -d '2025-12-31' +%s.
+# Examining support days for systems.
 
 After adding the template to a host, override host macros.
-### Method 1:
+### Usage - set macro:
 {$SUPPORT_END} in YYYYMMDD format
